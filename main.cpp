@@ -11,11 +11,22 @@ void set_phone(Contact& contact);
 void set_email(Contact& contact);
 void set_address(Contact& contact);
 void set_instagram(Contact& contact);
-bool insert_contact(Book &book);
-
-
+void create_contact(Book &book);
+void list_contacts(Book &book);
+void list_groups(Book &book);
+void delete_contact(Book &book);
+void save_file(Book &book, const char* file_name);
 
 namespace contact_space{
+
+    struct States{
+        int save = 0;
+        int cancel = 1;
+        int editing = 2;
+    };
+
+    States available_states; 
+
     void show_insert_menu(){
         cout << "## Inserção de contato ## \n" << endl;
         cout << "0 - Inserir nome" << endl;
@@ -38,26 +49,23 @@ namespace contact_space{
         cout << "6 - Salvar" << endl;
     }
 
-    bool process_input(Contact &contact, int input){
-        bool save; 
-        bool stop = false;
+    int process_input(Contact &contact, int input){
+        int state = available_states.editing;
 
-        do{
-            switch(input){
-            case 0: set_name(contact); break;
-            case 1: set_phone(contact); break;
-            case 2: set_email(contact); break;
-            case 3: set_address(contact); break;
-            case 4: set_instagram(contact); break;
-            case 5: stop = true; save = false; break;
-            case 6: stop = true; save = true; break;
-            default:
-                cout << "Opção inválida." << endl;
-            }
-        }while(stop);
-        
-        return save;
-    }   
+        switch(input){
+        case 0: set_name(contact); break;
+        case 1: set_phone(contact); break;
+        case 2: set_email(contact); break;
+        case 3: set_address(contact); break;
+        case 4: set_instagram(contact); break;
+        case 5: state = available_states.cancel; break;
+        case 6: state = available_states.save; break;
+        default:
+            cout << "Opção inválida." << endl;
+        }
+
+        return state;
+    }
 }
 
 void set_name(Contact& contact){
@@ -100,15 +108,15 @@ namespace book_space{
         cout << "5 - Sair" << endl;
     }
 
-    bool process_input(Book&book, int input){
+    bool process_input(Book&book, int input, const char* file_name){
         bool want_exit = false;
 
         switch(input){
-        case 0: create_contact(book); break;
+        case 0: create_contact(book); save_file(book, file_name); break;
         case 1: list_contacts(book); break;
         case 2: list_groups(book); break;
 
-        case 4: delete_contact(book); break;
+        case 4: delete_contact(book); save_file(book, file_name); break;
         case 5: want_exit = true; break;
         default:
             cout << "Opção inválida." << endl;
@@ -125,53 +133,73 @@ void delete_contact(Book& book){
 void list_contacts(Book& book){
     cout << ">> Contatos" << endl;
 
-    for(int i = 0; i < book.qtde_contacts; i++){
-        cout << "ID: " << i << endl;
-        cout << "Nome: " << book.contacts[i].name << endl;
-        cout << "Número: " << book.contacts[i].phone << endl;
-        cout << "---------------------------" << endl;
+    if(!book.qtde_contacts)
+        cout << "Nenhum contato cadastrado." << endl;
+    else{
+        for(int i = 0; i < book.qtde_contacts; i++){
+            cout << "ID: " << i << endl;
+            cout << "Nome: " << book.contacts[i].name << endl;
+            cout << "Número: " << book.contacts[i].phone << endl;
+            cout << "---------------------------" << endl;
+        }
     }
 }
 
 void list_groups(Book& book){
     cout << ">> GRUPOS" << endl;
+    
+    if(!book.qtde_groups)
+        cout << "Nenhum grupo cadastrado." << endl;
+    else{
+        for(int i = 0; i < book.qtde_groups; i++){
+            cout << "Nome do grupo: "<< book.groups[i].name << endl;
+            cout << "Membros: " << endl;
 
-    for(int i = 0; i < book.qtde_groups; i++){
-        cout << "Nome do grupo: "<< book.groups[i].name << endl;
-        cout << "Membros: " << endl;
+            for(int j=0; j < book.groups->qtde_members; j++){
+                cout << " - "<< book.groups[i].members[j] << endl;
+            }
 
-        for(int j=0; j < book.groups->qtde_members; j++){
-            cout << " - "<< book.groups[i].members[j] << endl;
+            cout << "---------------------------" << endl;
         }
-
-        cout << "---------------------------" << endl;
     }
 }
 
 void create_contact(Book &book){
     Contact contact;
-    int option;
-    bool was_contact_created;
-
-    contact_space::show_insert_menu();
-    cin >> option;
-
-    was_contact_created = contact_space::process_input(contact, option);
-
-    if(was_contact_created){
-
-    }
-}
-
-void run_book_menu(Book& book){
-    bool want_exit = false;
-    int option;
+    int state;
+    int input;
 
     while(true){
-        book_space::show_menu();
-        cin >> option;
+        contact_space::show_insert_menu();
+        
+        cout << "Opçao desejada: ";
+        cin >> input;
 
-        want_exit = book_space::process_input(book, option);
+        state = contact_space::process_input(contact, input);
+
+        if(state == contact_space::available_states.save){
+            book.contacts[book.qtde_contacts] = contact;
+            book.qtde_contacts++;
+            break;
+        }
+
+        if(state == contact_space::available_states.cancel){
+            break;
+        }
+    }   
+}
+
+void run_book_menu(Book& book, const char* file_name){
+    bool want_exit = false;
+    int input;
+        
+    while(true){
+        book_space::show_menu();
+
+        cout << "Opçao desejada: ";
+        cin >> input;
+
+        want_exit = book_space::process_input(book, input, file_name);
         
         if(want_exit)
             break;
@@ -189,12 +217,42 @@ bool exists_file(const char* persistent_file){
     return false;
 }
 
-void load_file(Book &book, const char* persistent_file){
-    ifstream ifile;
+void load_file(Book &book, const char* file_name){
+    // ifstream ifile;
 
-    ifile.read((char*)&book, sizeof(book));
+    // ifile.read((char*)&book, sizeof(book));
     
-    ifile.close(); 
+    // ifile.close(); 
+    // FILE* fin = fopen(file_name, "rb");
+    // fread(&book, sizeof(Book), 1, fin);
+    // fclose(fin);
+
+    FILE *fout = fopen(file_name, "rb");
+    fread(&book.qtde_contacts, sizeof(int), 1, fout);
+    fread(&book.qtde_groups, sizeof(int), 1, fout);
+
+    fread(book.contacts, sizeof(Contact), book.qtde_contacts, fout);
+    fread(book.groups, sizeof(Group), book.qtde_groups, fout);
+}
+
+void save_file(Book &book, const char* file_name){
+    // ifstream ifile;
+
+    FILE *fout = fopen(file_name, "wb");
+    fwrite(&book.qtde_contacts, sizeof(int), 1, fout);
+    fwrite(&book.qtde_groups, sizeof(int), 1, fout);
+
+    fwrite(book.contacts, sizeof(Contact), book.qtde_contacts, fout);
+    fwrite(book.groups, sizeof(Group), book.qtde_groups, fout);
+    // for(int i=0; i < book.qtde_contacts; ++i){
+    //     fwrite(&book.contacts[i], sizeof(Contact), 1, fout);
+    // }
+    
+    // for(int i=0; i < book.qtde_groups; ++i){
+    //     fwrite(&book.groups[i], sizeof(Group), 1, fout);
+    // }
+
+    fclose(fout);
 }
 
 void run_bookcontact(){
@@ -212,7 +270,7 @@ void run_bookcontact(){
         cout << "Não existe agenda na memória..." << endl;  
     }
         
-    run_book_menu(book);
+    run_book_menu(book, file_name);
 }
 
 int main(){
