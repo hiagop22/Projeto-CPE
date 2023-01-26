@@ -72,31 +72,31 @@ namespace contact_space{
 
 void set_name(Contact *contact){
     cout << "Digite o nome: ";
-    getline(cin, (*contact).name);
+    cin.getline((*contact).name, CHAR_ARRAY_SIZE);
 }
 
 void set_phone(Contact *contact){
     cout << "Digite o telefone: ";
-    getline(cin, (*contact).phone);
+    cin.getline((*contact).phone, CHAR_ARRAY_SIZE);
 }
 
 void set_email(Contact *contact){
     cout << "Digite o e-mail: ";
-    getline(cin, (*contact).email);
+    cin.getline((*contact).email, CHAR_ARRAY_SIZE);
 }
 
 void set_address(Contact *contact){
     cout << "Digite o país: ";
-    getline(cin, (*contact).address.country);
+    cin.getline((*contact).address.country, CHAR_ARRAY_SIZE);
     cout << "Digite a cidade: ";
-    getline(cin, (*contact).address.city);
+    cin.getline((*contact).address.city, CHAR_ARRAY_SIZE);
     cout << "Digite a CEP (0 se não souber): ";
-    getline(cin, (*contact).address.postal_code);
+    cin.getline((*contact).address.postal_code, CHAR_ARRAY_SIZE);
 }
 
 void set_instagram(Contact *contact){
     cout << "Digite o intagram: ";
-    cin >> (*contact).instagram;
+    cin.getline((*contact).instagram, CHAR_ARRAY_SIZE);
 }
 
 namespace book_space{
@@ -376,38 +376,28 @@ void run_book_menu(Book& book, const char* file_name){
 }
 
 void load_file(Book &book, const char* file_name){
-    // ifstream ifile;
+    FILE *file = fopen(file_name, "rb");
+    fread(&book.qtde_contacts, sizeof(int), 1, file);
 
-    // ifile.read((char*)&book, sizeof(book));
+    for(int i=0; i < book.qtde_contacts; i++){
+        Contact *p_contact = new Contact;
+        fread(p_contact, sizeof(Contact), 1, file);
+        book.contacts[i] = p_contact;
+    }
     
-    // ifile.close(); 
-    // FILE* fin = fopen(file_name, "rb");
-    // fread(&book, sizeof(Book), 1, fin);
-    // fclose(fin);
-
-    FILE *fout = fopen(file_name, "rb");
-    fread(&book.qtde_contacts, sizeof(int), 1, fout);
-
-    fread(book.contacts, sizeof(Contact), MAX_CONTACTS, fout);
-    
-    fclose(fout);
+    fclose(file);
 }
 
 
-// MEXER NISSO DEPOIS
 void save_file(Book &book, const char* file_name){
-    return;
+    FILE* file = fopen(file_name, "wb");
 
-    FILE *fout = fopen(file_name, "wb");
-    fwrite(&book.qtde_contacts, sizeof(int), 1, fout);
+    fwrite(&book.qtde_contacts, sizeof(int), 1, file);
 
-    fwrite(book.contacts, sizeof(Contact), MAX_CONTACTS, fout);
-    // for(int i=0; i < book.qtde_contacts; ++i){
-    //     fwrite(&book.contacts[i], sizeof(Contact), 1, fout);
-    // }
+    for(int i=0; i < book.qtde_contacts; ++i)
+        fwrite(book.contacts[i], sizeof(Contact), 1, file);
     
-
-    fclose(fout);
+    fclose(file);
 }
 
 void run_bookcontact(){

@@ -9,6 +9,7 @@
 
 #define MAX_CONTACTS 1000
 #define MAX_GROUPS 500
+#define CHAR_ARRAY_SIZE 30
 
 using namespace std;
 
@@ -18,23 +19,23 @@ struct Contact;
 struct Book;
 
 struct Date{
-    string day;
-    string month;
-    string year;
+    char day[CHAR_ARRAY_SIZE];
+    char month[CHAR_ARRAY_SIZE];
+    char year[CHAR_ARRAY_SIZE];
 };
 
 struct Address {
-    string country;
-    string city;
-    string postal_code;
+    char country[CHAR_ARRAY_SIZE];
+    char city[CHAR_ARRAY_SIZE];
+    char postal_code[CHAR_ARRAY_SIZE];
 };
 
 struct Contact{
-    string name;
-    string phone;
-    string email;
+    char name[CHAR_ARRAY_SIZE];
+    char phone[CHAR_ARRAY_SIZE];
+    char email[CHAR_ARRAY_SIZE];
     Address address;
-    string instagram;
+    char instagram[CHAR_ARRAY_SIZE];
     Date created;
     Date last_modification;
 };

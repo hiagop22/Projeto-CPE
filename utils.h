@@ -18,7 +18,7 @@ bool exists_file(const char* file_name){
     ifstream ifile;
     ifile.open(file_name);
     
-    if(ifile){
+    if(ifile.is_open()){
         ifile.close();
         return true;
     }
