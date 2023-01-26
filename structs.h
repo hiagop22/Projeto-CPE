@@ -18,9 +18,9 @@ struct Contact;
 struct Book;
 
 struct Date{
-    int day;
-    int month;
-    int year;
+    string day;
+    string month;
+    string year;
 };
 
 struct Address {

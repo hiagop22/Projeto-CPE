@@ -14,13 +14,6 @@ string string_tolower(string input){
     return input;
 }
 
-void read_line(string var){
-    do{
-        getline(cin, var);
-    }
-    while(var.compare("\n") != 0);
-}
-
 bool exists_file(const char* file_name){
     ifstream ifile;
     ifile.open(file_name);

@@ -14,6 +14,7 @@ void set_address(Contact *contact);
 void set_instagram(Contact *contact);
 void create_contact(Book &book);
 void list_contacts(Book &book);
+void menu_find_contact(Book& book);
 void menu_delete_contact(Book &book);
 void save_file(Book &book, const char* file_name);
 
@@ -70,26 +71,26 @@ namespace contact_space{
 
 void set_name(Contact *contact){
     cout << "Digite o nome: ";
-    cin >> (*contact).name;
+    getline(cin, (*contact).name);
 }
 
 void set_phone(Contact *contact){
     cout << "Digite o telefone: ";
-    cin >> (*contact).phone;
+    getline(cin, (*contact).phone);
 }
 
 void set_email(Contact *contact){
     cout << "Digite o e-mail: ";
-    cin >> (*contact).email;
+    getline(cin, (*contact).email);
 }
 
 void set_address(Contact *contact){
     cout << "Digite o país: ";
-    cin >> (*contact).address.country;
+    getline(cin, (*contact).address.country);
     cout << "Digite a cidade: ";
-    cin >> (*contact).address.city;
+    getline(cin, (*contact).address.city);
     cout << "Digite a CEP (0 se não souber): ";
-    cin >> (*contact).address.postal_code;
+    getline(cin, (*contact).address.postal_code);
 }
 
 void set_instagram(Contact *contact){
@@ -113,7 +114,7 @@ namespace book_space{
         switch(input){
         case 0: create_contact(book); save_file(book, file_name); break;
         case 1: list_contacts(book); break;
-
+        case 2: menu_find_contact(book); break;
         case 3: menu_delete_contact(book); save_file(book, file_name); break;
         case 4: want_exit = true; break;
         default:
@@ -137,15 +138,40 @@ bool compare_contacts(const Contact *p_contact1, const Contact *p_contact2){
 }
 
 void sort_book(Book& book){
-    sort(book.contacts, book.contacts + book.qtde_contacts);
+    sort(book.contacts, book.contacts + book.qtde_contacts, &compare_contacts);
 }
 
 int find_contact_id(Book& book, string name){
-    int id = 1;
+    // A mixed combination of 
+    // https://cplusplus.com/reference/string/string/find/
+    // and https://www.scaler.com/topics/removing-whitespace-from-a-string-in-cpp/
+    // Robust to case sensitive, non complete names and white spaces
+    // If there is a contact named Hiago Santos it will find it,
+    // but if there are the registers Hiago Santos and Santos Silva
+    // you will receive the second occurance, because the algorithm will
+    // prioritize the leftmost name
+    int id = -1;
+    string name2find = string_tolower(name);
+
+    name2find.erase(remove_if(name2find.begin(), name2find.end(), ::isspace), name2find.end());
+
+    string candidate_name;
+    size_t found;
+    size_t last_post_found;
 
     for(int i=0; i < book.qtde_contacts; ++i){
+        candidate_name = string_tolower(book.contacts[i]->name);
 
-    }
+        candidate_name.erase(remove_if(candidate_name.begin(), candidate_name.end(), ::isspace), candidate_name.end());
+
+        found = candidate_name.find(name2find);
+
+        if (found!=string::npos){
+            if(found < last_post_found){
+                id = i;
+                }
+            }
+        }
 
     return id;
 }
@@ -169,25 +195,24 @@ int show_contact_info(Book& book, string name){
         cout << "- Dia: " << book.contacts[contact_id]->created.day << endl;
         cout << "- Mês: " << book.contacts[contact_id]->created.month << endl;
         cout << "- Ano: " << book.contacts[contact_id]->created.year << endl;
+
+        cout << "Data última modificação: " << endl;
+        cout << "- Dia: " << book.contacts[contact_id]->last_modification.day << endl;
+        cout << "- Mês: " << book.contacts[contact_id]->last_modification.month << endl;
+        cout << "- Ano: " << book.contacts[contact_id]->last_modification.year << endl;
     }
 
     return contact_id;
-}
-
-void move_contact_position(Book &book, int idx_src, int idx_dest){
-    book.contacts[idx_dest] = book.contacts[idx_src];
-    delete book.contacts[idx_src];
 }
 
 void delete_contact(Book& book, int contact_id, bool show_messages=true){
     delete book.contacts[contact_id];
 
     if(book.qtde_contacts > 1){
-        int src_idx = book.qtde_contacts-1;
+        book.contacts[contact_id] = book.contacts[book.qtde_contacts-1];
 
-        move_contact_position(book, src_idx, contact_id);
         if(show_messages)
-            cout << "Contato deletado com sucesso";
+            cout << "Contato deletado com sucesso" << endl;
     }
     else{
         if(show_messages){
@@ -204,14 +229,25 @@ void clean_book(Book& book){
         delete_contact(book, i, false);
 }
 
+void menu_find_contact(Book& book){
+    string input;
+    int contact_id;
+    cout << "Digite o nome do contato a ser buscado: ";
+    
+    getline(cin, input);
+    contact_id = show_contact_info(book, input);
+
+    if(contact_id < 0)
+        cout << "Contato não encontrado na agenda." << endl;
+}
 
 void menu_delete_contact(Book& book){
     string input;
     int contact_id = -1;
 
     cout << "Nome do contato para remover: ";
-    read_line(input);
-    contact_id = show_contact_info(input);
+    getline(cin, input);
+    contact_id = show_contact_info(book, input);
 
     if(contact_id < 0){
         cout << "Contato não encontrado na agenda." << endl;
@@ -253,7 +289,7 @@ void create_contact(Book &book){
         
         cout << "Opçao desejada: ";
         cin >> input;
-
+        cin.ignore();
         state = contact_space::process_input(p_contact, input);
 
         if(state == contact_space::available_states.save){
@@ -278,7 +314,7 @@ void run_book_menu(Book& book, const char* file_name){
 
         cout << "Opçao desejada: ";
         cin >> input;
-
+        cin.ignore();
         want_exit = book_space::process_input(book, input, file_name);
         
         if(want_exit)
