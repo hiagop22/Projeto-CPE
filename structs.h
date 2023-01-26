@@ -15,13 +15,12 @@ using namespace std;
 struct Date;
 struct Address;
 struct Contact;
-struct Group;
 struct Book;
 
 struct Date{
-    int dia;
-    int mes;
-    int ano;
+    int day;
+    int month;
+    int year;
 };
 
 struct Address {
@@ -40,17 +39,10 @@ struct Contact{
     Date last_modification;
 };
 
-struct Group{
-    string name;
-    int qtde_members;
-    Contact *members[MAX_CONTACTS];
-};
-
 struct Book{
-    int qtde_contacts, qtde_groups;
+    int qtde_contacts;
     
-    Contact contacts[MAX_CONTACTS];
-    Group groups[MAX_GROUPS];
+    Contact *contacts[MAX_CONTACTS];
 };
 
 #endif
