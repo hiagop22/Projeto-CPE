@@ -19,6 +19,8 @@ void menu_delete_contact(Book &book);
 void menu_update_contact(Book &book);
 void save_file(Book &book, const char* file_name);
 
+// CONSERTAR A PARTE DO SORT 
+
 namespace contact_space{
 
     struct States{
@@ -129,11 +131,17 @@ namespace book_space{
 }
 
 bool compare_contacts(const Contact *p_contact1, const Contact *p_contact2){
-    if((*p_contact2).name > (*p_contact1).name)
+    string name1 = std::string((*p_contact1).name);
+    string name2 = std::string((*p_contact2).name);
+
+    string phone1 = std::string((*p_contact1).phone);
+    string phone2 = std::string((*p_contact2).phone);
+
+    if(name2 > name1)
         return 1;
 
-    if((*p_contact2).name == (*p_contact1).name){
-        if((*p_contact2).phone > (*p_contact1).phone)
+    if(name2 == name1){
+        if(phone2 > phone1)
             return 1;
     }
 
@@ -141,7 +149,7 @@ bool compare_contacts(const Contact *p_contact1, const Contact *p_contact2){
 }
 
 void sort_book(Book& book){
-    sort(book.contacts, book.contacts + book.qtde_contacts, &compare_contacts);
+    sort(book.contacts, book.contacts + book.qtde_contacts, compare_contacts);
 }
 
 int find_contact_id(Book& book, string name){
@@ -156,22 +164,23 @@ int find_contact_id(Book& book, string name){
     int id = -1;
     string name2find = string_tolower(name);
 
-    name2find.erase(remove_if(name2find.begin(), name2find.end(), ::isspace), name2find.end());
+    // name2find.erase(remove_if(name2find.begin(), name2find.end(), ::isspace), name2find.end());
 
     string candidate_name;
     size_t found;
-    size_t last_post_found;
+    size_t last_post_found = 10000;
 
     for(int i=0; i < book.qtde_contacts; ++i){
         candidate_name = string_tolower(book.contacts[i]->name);
 
-        candidate_name.erase(remove_if(candidate_name.begin(), candidate_name.end(), ::isspace), candidate_name.end());
+        // candidate_name.erase(remove_if(candidate_name.begin(), candidate_name.end(), ::isspace), candidate_name.end());
 
         found = candidate_name.find(name2find);
 
         if (found!=string::npos){
             if(found < last_post_found){
                 id = i;
+                last_post_found = found;
                 }
             }
         }
@@ -188,6 +197,7 @@ int show_contact_info(Book& book, string name){
         cout << "Nome: " << book.contacts[contact_id]->name << endl;
         cout << "Telefone: " << book.contacts[contact_id]->phone << endl;
         cout << "E-mail: " << book.contacts[contact_id]->email << endl;
+        cout << "Instagram: " << book.contacts[contact_id]->instagram << endl;
 
         cout << "Address: " << endl;
         cout << "- País: " << book.contacts[contact_id]->address.country << endl;
