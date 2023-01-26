@@ -145,11 +145,11 @@ int find_contact_id(Book& book, string name){
     // A mixed combination of 
     // https://cplusplus.com/reference/string/string/find/
     // and https://www.scaler.com/topics/removing-whitespace-from-a-string-in-cpp/
-    // Robust to case sensitive, non complete names and white spaces
-    // If there is a contact named Hiago Santos it will find it,
+    // Robust to case sensitive and non complete names
+    // If there is a contact named Hiago Santos it will find it if you only write santos,
     // but if there are the registers Hiago Santos and Santos Silva
-    // you will receive the second occurance, because the algorithm will
-    // prioritize the leftmost name
+    // you will receive the second occurrence, because the algorithm 
+    // prioritize the leftmost occurrence
     int id = -1;
     string name2find = string_tolower(name);
 
