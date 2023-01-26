@@ -343,6 +343,9 @@ void create_contact(Book &book){
         if(state == contact_space::available_states.save){
             book.contacts[book.qtde_contacts] = p_contact;
             book.qtde_contacts++;
+            
+            sort_book(book);
+            
             break;
         }
 
