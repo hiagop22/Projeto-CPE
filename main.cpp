@@ -164,7 +164,7 @@ int find_contact_id(Book& book, string name){
     int id = -1;
     string name2find = string_tolower(name);
 
-    // name2find.erase(remove_if(name2find.begin(), name2find.end(), ::isspace), name2find.end());
+    name2find.erase(remove_if(name2find.begin(), name2find.end(), ::isspace), name2find.end());
 
     string candidate_name;
     size_t found;
@@ -173,7 +173,7 @@ int find_contact_id(Book& book, string name){
     for(int i=0; i < book.qtde_contacts; ++i){
         candidate_name = string_tolower(book.contacts[i]->name);
 
-        // candidate_name.erase(remove_if(candidate_name.begin(), candidate_name.end(), ::isspace), candidate_name.end());
+        candidate_name.erase(remove_if(candidate_name.begin(), candidate_name.end(), ::isspace), candidate_name.end());
 
         found = candidate_name.find(name2find);
 
@@ -204,15 +204,15 @@ int show_contact_info(Book& book, string name){
         cout << "- Cidade: " << book.contacts[contact_id]->address.city << endl;
         cout << "- CEP: " << book.contacts[contact_id]->address.postal_code << endl;
         
-        cout << "Data criação: " << endl;
-        cout << "- Dia: " << book.contacts[contact_id]->created.day << endl;
-        cout << "- Mês: " << book.contacts[contact_id]->created.month << endl;
-        cout << "- Ano: " << book.contacts[contact_id]->created.year << endl;
+        // cout << "Data criação: " << endl;
+        // cout << "- Dia: " << book.contacts[contact_id]->created.day << endl;
+        // cout << "- Mês: " << book.contacts[contact_id]->created.month << endl;
+        // cout << "- Ano: " << book.contacts[contact_id]->created.year << endl;
 
-        cout << "Data última modificação: " << endl;
-        cout << "- Dia: " << book.contacts[contact_id]->last_modification.day << endl;
-        cout << "- Mês: " << book.contacts[contact_id]->last_modification.month << endl;
-        cout << "- Ano: " << book.contacts[contact_id]->last_modification.year << endl;
+        // cout << "Data última modificação: " << endl;
+        // cout << "- Dia: " << book.contacts[contact_id]->last_modification.day << endl;
+        // cout << "- Mês: " << book.contacts[contact_id]->last_modification.month << endl;
+        // cout << "- Ano: " << book.contacts[contact_id]->last_modification.year << endl;
     }
 
     return contact_id;
