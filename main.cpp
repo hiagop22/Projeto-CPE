@@ -16,6 +16,7 @@ void create_contact(Book &book);
 void list_contacts(Book &book);
 void menu_find_contact(Book& book);
 void menu_delete_contact(Book &book);
+void menu_update_contact(Book &book);
 void save_file(Book &book, const char* file_name);
 
 namespace contact_space{
@@ -29,7 +30,7 @@ namespace contact_space{
     States available_states; 
 
     void show_insert_menu(){
-        cout << "## Inserção de contato ## \n" << endl;
+        cout << "## Inserção / Atualização de contato ## \n" << endl;
         cout << "0 - Inserir nome" << endl;
         cout << "1 - Inserir telefone" << endl;
         cout << "2 - Inserir e-mail" << endl;
@@ -105,7 +106,8 @@ namespace book_space{
         cout << "1 - Listar contatos" << endl;
         cout << "2 - Buscar contatos" << endl;
         cout << "3 - Deletar contato" << endl;
-        cout << "4 - Sair" << endl;
+        cout << "4 - Atualizar contato" << endl;
+        cout << "5 - Sair" << endl;
     }
 
     bool process_input(Book&book, int input, const char* file_name){
@@ -116,7 +118,8 @@ namespace book_space{
         case 1: list_contacts(book); break;
         case 2: menu_find_contact(book); break;
         case 3: menu_delete_contact(book); save_file(book, file_name); break;
-        case 4: want_exit = true; break;
+        case 4: menu_update_contact(book); save_file(book, file_name); break;
+        case 5: want_exit = true; break;
         default:
             cout << "Opção inválida." << endl;
         }
@@ -241,6 +244,51 @@ void menu_find_contact(Book& book){
         cout << "Contato não encontrado na agenda." << endl;
 }
 
+void menu_update_contact(Book &book){
+    string input_name;
+    int contact_id;
+    cout << "Digite o nome do contato a ser atualizado: ";
+    
+    getline(cin, input_name);
+    contact_id = show_contact_info(book, input_name);
+    if(contact_id < 0)
+        cout << "Contato não encontrado na agenda." << endl;
+    else{
+        cout << "Esse o contato mesmo que deseja atualizar ? (y/n) ";
+
+        string input;
+        getline(cin, input);
+        if(!string_tolower(input).compare("y")){
+            Contact *p_contact = new Contact;
+            *p_contact = *book.contacts[contact_id];
+
+            int state;
+            int input_menu;
+
+            while(true){
+                contact_space::show_insert_menu();
+                
+                cout << "Opçao desejada: ";
+                cin >> input_menu;
+                cin.ignore();
+                state = contact_space::process_input(p_contact, input_menu);
+
+                if(state == contact_space::available_states.save){
+                    Contact *tmp_contact = book.contacts[contact_id];
+                    book.contacts[contact_id] = p_contact;
+                    delete tmp_contact;
+                    break;
+                }
+
+                if(state == contact_space::available_states.cancel){
+                    delete p_contact;
+                    break;
+                }
+            }   
+            }
+        }
+}
+
 void menu_delete_contact(Book& book){
     string input;
     int contact_id = -1;
@@ -317,8 +365,10 @@ void run_book_menu(Book& book, const char* file_name){
         cin.ignore();
         want_exit = book_space::process_input(book, input, file_name);
         
-        if(want_exit)
+        if(want_exit){
+            clean_book(book);
             break;
+        }
     }
 }
 
